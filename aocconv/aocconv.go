@@ -5,26 +5,27 @@ import (
 	"strings"
 )
 
-func StrToIntSlice(inputBytes string) ([]int, error) {
-	inputs := strings.Split(string(inputBytes), "\n")
-	inputsInt := make([]int, 0, len(inputs))
+func StrToIntSlice(inputStr string) ([]int, error) {
+	strs := StrToStrSlice(inputStr)
+	ints := make([]int, 0, len(strs))
 
-	for _, inputStr := range inputs {
-		if inputStr == "" {
-			continue
-		}
-
+	for _, inputStr := range strs {
 		asInt, err := strconv.Atoi(inputStr)
 		if err != nil {
 			return nil, err
 		}
 
-		inputsInt = append(inputsInt, asInt)
+		ints = append(ints, asInt)
 	}
 
-	return inputsInt, nil
+	return ints, nil
 }
 
-func StrToStrSlice(inputBytes string) []string {
-	return strings.Split(strings.TrimRight(inputBytes, "\n"), "\n")
+func StrToStrSlice(inputStr string) []string {
+	strs := strings.Split(strings.TrimRight(inputStr, "\n"), "\n")
+	if len(strs) == 1 && strs[0] == "" {
+		return []string{}
+	}
+
+	return strs
 }
