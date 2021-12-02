@@ -24,3 +24,7 @@ func StrToIntSlice(inputBytes string) ([]int, error) {
 
 	return inputsInt, nil
 }
+
+func StrToStrSlice(inputBytes string) []string {
+	return strings.Split(strings.TrimRight(inputBytes, "\n"), "\n")
+}
