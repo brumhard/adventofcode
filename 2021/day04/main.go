@@ -4,8 +4,6 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
 
 	"github.com/brumhard/adventofcode/aocconv"
 )
@@ -106,15 +104,9 @@ func run() error {
 func inputFromString(inputStr string) (Bingo, error) {
 	inputRows := aocconv.StrToStrSlice(inputStr)
 
-	inputStrs := strings.Split(inputRows[0], ",")
-	inputs := make([]int, 0, len(inputStrs))
-	for _, str := range inputStrs {
-		i, err := strconv.Atoi(str)
-		if err != nil {
-			return Bingo{}, err
-		}
-
-		inputs = append(inputs, i)
+	inputs, err := aocconv.StrToIntSlice(inputRows[0], aocconv.WithDelimeter(","))
+	if err != nil {
+		return Bingo{}, err
 	}
 
 	var (
@@ -132,18 +124,12 @@ func inputFromString(inputStr string) (Bingo, error) {
 		}
 
 		currentFields = append(currentFields, []Field{})
-		ints := strings.Split(boardRow, " ")
-		for _, fieldStr := range ints {
-			if fieldStr == "" {
-				// additional whitespace in board
-				continue
-			}
+		ints, err := aocconv.StrToIntSlice(boardRow, aocconv.WithWhitespace())
+		if err != nil {
+			return Bingo{}, err
+		}
 
-			field, err := strconv.Atoi(strings.TrimSpace(fieldStr))
-			if err != nil {
-				return Bingo{}, err
-			}
-
+		for _, field := range ints {
 			currentFields[y] = append(currentFields[y], Field{
 				number: field,
 			})
