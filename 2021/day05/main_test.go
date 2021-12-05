@@ -40,32 +40,40 @@ func TestSolution(t *testing.T) {
 	})
 
 	t.Run("CoveredCoordinates", func(t *testing.T) {
-		line := Line{start: Coordinate{x: 1, y: 2}, end: Coordinate{x: 3, y: 2}}
-		coords := line.CoveredCoordinates(false)
+		t.Run("horizontal", func(t *testing.T) {
+			line := Line{start: Coordinate{x: 1, y: 2}, end: Coordinate{x: 3, y: 2}}
+			coords := line.CoveredCoordinates(false)
 
-		if len(coords) != 3 {
-			t.Errorf("should cover exactly 3 coordinates, but got %d", len(coords))
-		}
+			if len(coords) != 3 {
+				t.Errorf("should cover exactly 3 coordinates, but got %d", len(coords))
+			}
+		})
 
-		line = Line{start: Coordinate{x: 1, y: 4}, end: Coordinate{x: 1, y: 2}}
-		coords = line.CoveredCoordinates(false)
+		t.Run("vertical", func(t *testing.T) {
+			line := Line{start: Coordinate{x: 1, y: 4}, end: Coordinate{x: 1, y: 2}}
+			coords := line.CoveredCoordinates(false)
 
-		if len(coords) != 3 {
-			t.Errorf("should cover exactly 3 coordinates, but got %d", len(coords))
-		}
+			if len(coords) != 3 {
+				t.Errorf("should cover exactly 3 coordinates, but got %d", len(coords))
+			}
+		})
 
-		line = Line{start: Coordinate{x: 1, y: 1}, end: Coordinate{x: 3, y: 3}}
-		coords = line.CoveredCoordinates(true)
+		t.Run("diagonal", func(t *testing.T) {
+			line := Line{start: Coordinate{x: 1, y: 1}, end: Coordinate{x: 3, y: 3}}
+			coords := line.CoveredCoordinates(true)
 
-		if len(coords) != 3 {
-			t.Errorf("should cover exactly 3 coordinates, but got %d", len(coords))
-		}
+			if len(coords) != 3 {
+				t.Errorf("should cover exactly 3 coordinates, but got %d", len(coords))
+			}
+		})
 
-		line = Line{start: Coordinate{x: 9, y: 7}, end: Coordinate{x: 7, y: 9}}
-		coords = line.CoveredCoordinates(true)
+		t.Run("diagonal 2", func(t *testing.T) {
+			line := Line{start: Coordinate{x: 9, y: 7}, end: Coordinate{x: 7, y: 9}}
+			coords := line.CoveredCoordinates(true)
 
-		if len(coords) != 3 {
-			t.Errorf("should cover exactly 3 coordinates, but got %d", len(coords))
-		}
+			if len(coords) != 3 {
+				t.Errorf("should cover exactly 3 coordinates, but got %d", len(coords))
+			}
+		})
 	})
 }
