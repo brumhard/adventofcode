@@ -36,54 +36,58 @@ func inputFromString(inputStr string) ([]int, error) {
 	return aocconv.StrToIntSlice(inputStr, aocconv.WithDelimeter(","))
 }
 
-// func SolvePart1(input []int) int {
-// 	for y := 0; y < 80; y++ {
-// 		var toAppend []int
-// 		for i := range input {
-// 			if input[i] == 0 {
-// 				toAppend = append(toAppend, 8)
-// 				input[i] = 6
-// 				continue
-// 			}
-
-// 			input[i]--
-// 		}
-// 		input = append(input, toAppend...)
-// 	}
-
-// 	return len(input)
-// }
-
+// SolvePart1 is the naive solution to the problem without optimzations.
 func SolvePart1(input []int) int {
-	return solveAnyPart(input, 80)
+	localInput := make([]int, len(input))
+	copy(localInput, input)
+
+	for y := 0; y < 80; y++ {
+		var toAppend []int
+		for i := range localInput {
+			if localInput[i] == 0 {
+				toAppend = append(toAppend, 8)
+				localInput[i] = 6
+				continue
+			}
+
+			localInput[i]--
+		}
+		localInput = append(localInput, toAppend...)
+	}
+
+	return len(localInput)
 }
 
 func SolvePart2(input []int) int {
-	return solveAnyPart(input, 256)
+	return solveAnyPartWithCache(input, 256)
 }
 
-func solveAnyPart(input []int, days int) int {
+func solveAnyPartWithCache(input []int, days int) int {
 	sum := 0
+	cache := map[int]int{}
 	for _, fish := range input {
-		sum += calcProduced(days, fish)
+		sum += calcProduced(days, fish, cache)
 	}
 
 	return sum
 }
 
-// daysleft to produced
-var cache = map[int]int{}
-
-// returns itself and all fishes produced from itself and children
-func calcProduced(daysLeft int, state int) int {
+// calcProduced returns itself and all fishes produced from itself and children.
+// cache is used to save solutions that already have been calculated.
+// If cache is nil it will not be used.
+func calcProduced(daysLeft int, initialTimer int, cache map[int]int) int {
 	sum := 1
-	for i := daysLeft - state; i > 0; i -= 7 {
-		produced, ok := cache[i]
-		if !ok {
-			produced = calcProduced(i-1, 8)
-			cache[i] = produced
+	for i := daysLeft - initialTimer; i > 0; i -= 7 {
+		if cache == nil {
+			sum += calcProduced(i-1, 8, cache)
+			continue
 		}
-		sum += produced
+
+		_, ok := cache[i]
+		if !ok {
+			cache[i] = calcProduced(i-1, 8, cache)
+		}
+		sum += cache[i]
 	}
 	return sum
 }
