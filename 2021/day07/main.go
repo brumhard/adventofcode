@@ -43,21 +43,17 @@ func solveAnyPart(input []int, calcFuelUsedFromDist func(dist int) int) int {
 		}
 	}
 
-	minFuelUsed := 0
-
+	minFuelUsed := math.MaxInt
 	for i := 0; i <= max; i++ {
-		func() {
-			fuelUsed := 0
-			for _, pos := range input {
-				dist := int(math.Abs(float64(pos - i)))
-				fuelUsed += calcFuelUsedFromDist(dist)
-				if i != 0 && fuelUsed > minFuelUsed {
-					return
-				}
-			}
+		fuelUsed := 0
+		for _, pos := range input {
+			dist := int(math.Abs(float64(pos - i)))
+			fuelUsed += calcFuelUsedFromDist(dist)
+		}
 
+		if fuelUsed < minFuelUsed {
 			minFuelUsed = fuelUsed
-		}()
+		}
 	}
 
 	return minFuelUsed
