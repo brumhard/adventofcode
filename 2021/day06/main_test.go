@@ -30,6 +30,15 @@ func TestSolution(t *testing.T) {
 		}
 	})
 
+	t.Run("Test Part2 concurrent", func(t *testing.T) {
+		got := SolvePart2Concurrently(input)
+		expected := 26984457539
+
+		if got != expected {
+			t.Errorf("expected '%d' but got '%d'", expected, got)
+		}
+	})
+
 	t.Run("calcProduced", func(t *testing.T) {
 		tests := []struct {
 			name                             string
