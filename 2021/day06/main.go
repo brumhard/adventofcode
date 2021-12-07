@@ -3,7 +3,6 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"math"
 	"os"
 	"runtime"
 	"sync"
@@ -121,37 +120,28 @@ func calcProduced(daysLeft int, initialTimer int, cache *safeCache) int {
 }
 
 func SolvePart2Concurrently(input []int) int {
-	numCPU := runtime.NumCPU()
+	numChan := make(chan int)
 	sumChan := make(chan int)
 	cache := newSafeCache()
+	days := 256
 
-	workerlen := int(math.Ceil(float64(len(input)) / float64(numCPU)))
-	workerIndex := 0
-	workersStarted := 0
-	for i := 0; i < numCPU; i++ {
-		workersStarted++
-
-		lastIndex := workerIndex + workerlen
-		if lastIndex >= len(input)-1 {
-			lastIndex = len(input) - 1
-		}
-
-		go func(input []int) {
-			sumChan <- solveAnyPartWithCache(input, 256, cache)
-		}(input[workerIndex:lastIndex])
-
-		if lastIndex == len(input)-1 {
-			break
-		}
-
-		workerIndex += workerlen
+	for i := 0; i < runtime.NumCPU(); i++ {
+		go func() {
+			for val := range numChan {
+				sumChan <- calcProduced(days, val, cache)
+			}
+		}()
 	}
-	if workerlen*workersStarted < len(input) {
-		panic("wtf")
-	}
+
+	go func() {
+		for _, num := range input {
+			numChan <- num
+		}
+		close(numChan)
+	}()
 
 	sum := 0
-	for i := 0; i < workersStarted; i++ {
+	for range input {
 		sum += <-sumChan
 	}
 

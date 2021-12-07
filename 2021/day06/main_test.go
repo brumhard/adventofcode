@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math/rand"
 	"testing"
 )
 
@@ -95,6 +96,23 @@ func TestSolution(t *testing.T) {
 					t.Errorf("expected '%d' but got '%d'", tt.expected, got)
 				}
 			})
+		}
+	})
+}
+
+func BenchmarkSolvePart2(b *testing.B) {
+	input := make([]int, 0, 1000)
+	for i := 0; i < 1000; i++ {
+		input = append(input, rand.Intn(8))
+	}
+	b.Run("sequentially", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			SolvePart2(input)
+		}
+	})
+	b.Run("concurrently", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			SolvePart2Concurrently(input)
 		}
 	})
 }
