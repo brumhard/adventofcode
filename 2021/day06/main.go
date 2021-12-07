@@ -3,9 +3,9 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"math"
 	"os"
 	"runtime"
+	"sync"
 
 	"github.com/brumhard/adventofcode/aocconv"
 )
@@ -59,12 +59,38 @@ func SolvePart1(input []int) int {
 }
 
 func SolvePart2(input []int) int {
-	return solveAnyPartWithCache(input, 256)
+	return solveAnyPartWithCache(input, 256, newSafeCache())
 }
 
-func solveAnyPartWithCache(input []int, days int) int {
+type safeCache struct {
+	m  map[int]int
+	mu sync.RWMutex
+}
+
+func newSafeCache() *safeCache {
+	return &safeCache{
+		m:  map[int]int{},
+		mu: sync.RWMutex{},
+	}
+}
+
+func (c *safeCache) Get(index int) (int, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	val, ok := c.m[index]
+	return val, ok
+}
+
+func (c *safeCache) Set(index, val int) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.m[index] = val
+}
+
+func solveAnyPartWithCache(input []int, days int, cache *safeCache) int {
 	sum := 0
-	cache := map[int]int{}
 	for _, fish := range input {
 		sum += calcProduced(days, fish, cache)
 	}
@@ -75,60 +101,47 @@ func solveAnyPartWithCache(input []int, days int) int {
 // calcProduced returns itself and all fishes produced from itself and children.
 // cache is used to save solutions that already have been calculated.
 // If cache is nil it will not be used.
-func calcProduced(daysLeft int, initialTimer int, cache map[int]int) int {
+func calcProduced(daysLeft int, initialTimer int, cache *safeCache) int {
 	sum := 1
 	for i := daysLeft - initialTimer; i > 0; i -= 7 {
 		if cache == nil {
-			sum += calcProduced(i-1, 8, cache)
+			sum += calcProduced(i-1, 8, nil)
 			continue
 		}
 
-		_, ok := cache[i]
+		produced, ok := cache.Get(i)
 		if !ok {
-			cache[i] = calcProduced(i-1, 8, cache)
+			produced = calcProduced(i-1, 8, cache)
+			cache.Set(i, produced)
 		}
-		sum += cache[i]
+		sum += produced
 	}
 	return sum
 }
 
-func SolvePart2Concurrent(input []int) int {
-	numCPU := runtime.NumCPU()
+func SolvePart2Concurrently(input []int) int {
+	numChan := make(chan int)
 	sumChan := make(chan int)
-	workerlen := int(math.Ceil(float64(len(input)) / float64(numCPU)))
-	workerIndex := 0
-	for i := 0; i < numCPU; i++ {
-		if workerIndex > len(input)-1 {
-			break
-		}
+	cache := newSafeCache()
+	days := 256
 
-		lastIndex := workerIndex + workerlen
-		if lastIndex >= len(input)-1 {
-			lastIndex = len(input) - 1
-		}
-
-		go func(input []int) {
-			for y := 0; y < 256; y++ {
-				var toAppend []int
-				for i := range input {
-					if input[i] == 0 {
-						toAppend = append(toAppend, 8)
-						input[i] = 6
-						continue
-					}
-
-					input[i]--
-				}
-				input = append(input, toAppend...)
+	for i := 0; i < runtime.NumCPU(); i++ {
+		go func() {
+			for val := range numChan {
+				sumChan <- calcProduced(days, val, cache)
 			}
-			sumChan <- len(input)
-		}(input[workerIndex:lastIndex])
-
-		workerIndex += workerlen
+		}()
 	}
 
+	go func() {
+		for _, num := range input {
+			numChan <- num
+		}
+		close(numChan)
+	}()
+
 	sum := 0
-	for i := 0; i < numCPU; i++ {
+	for range input {
 		sum += <-sumChan
 	}
 
