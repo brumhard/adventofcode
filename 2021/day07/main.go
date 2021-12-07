@@ -35,7 +35,7 @@ func inputFromString(inputStr string) ([]int, error) {
 	return aocconv.StrToIntSlice(inputStr, aocconv.WithDelimeter(","))
 }
 
-func SolvePart1(input []int) int {
+func solveAnyPart(input []int, calcFuelUsedFromDist func(dist int) int) int {
 	var max int
 	for _, pos := range input {
 		if pos > max {
@@ -45,45 +45,28 @@ func SolvePart1(input []int) int {
 
 	minFuelUsed := 0
 
-outer:
 	for i := 0; i <= max; i++ {
-		fuelUsed := 0
-		for _, pos := range input {
-			fuelUsed += int(math.Abs(float64(pos - i)))
-			if i != 0 && fuelUsed > minFuelUsed {
-				continue outer
+		func() {
+			fuelUsed := 0
+			for _, pos := range input {
+				dist := int(math.Abs(float64(pos - i)))
+				fuelUsed += calcFuelUsedFromDist(dist)
+				if i != 0 && fuelUsed > minFuelUsed {
+					return
+				}
 			}
-		}
 
-		minFuelUsed = fuelUsed
+			minFuelUsed = fuelUsed
+		}()
 	}
 
 	return minFuelUsed
 }
 
+func SolvePart1(input []int) int {
+	return solveAnyPart(input, func(dist int) int { return dist })
+}
+
 func SolvePart2(input []int) int {
-	var max int
-	for _, pos := range input {
-		if pos > max {
-			max = pos
-		}
-	}
-
-	minFuelUsed := 0
-
-outer:
-	for i := 0; i <= max; i++ {
-		fuelUsed := 0
-		for _, pos := range input {
-			dist := int(math.Abs(float64(pos - i)))
-			fuelUsed += (dist * (dist + 1)) / 2 // gauss formula for sum of 1+...+n-1+n
-			if i != 0 && fuelUsed > minFuelUsed {
-				continue outer
-			}
-		}
-
-		minFuelUsed = fuelUsed
-	}
-
-	return minFuelUsed
+	return solveAnyPart(input, func(dist int) int { return (dist * (dist + 1)) / 2 })
 }
