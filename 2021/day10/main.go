@@ -92,6 +92,7 @@ func SolvePart1(input []string) int {
 
 			if !(closing(openingStack.Pop()) == char) {
 				sum += scoreMap1[char]
+				break
 			}
 		}
 	}
