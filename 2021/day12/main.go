@@ -87,13 +87,7 @@ func (p path) isInvalid(part2 bool) bool {
 }
 
 func (p path) isFinished() bool {
-	for _, str := range p {
-		if str == "end" {
-			return true
-		}
-	}
-
-	return false
+	return p.end() == "end"
 }
 
 func isLower(s string) bool {
@@ -105,6 +99,8 @@ func isLower(s string) bool {
 	return true
 }
 
+// NOTE: sth is wrong here the last path element in some paths is replaced with "kj"
+// in some cases for whatever reason. Still returns the right amount of paths tho.
 func possiblePathsFrom(current path, edgeMap map[string][]string, part2 bool) []path {
 	var paths []path
 
