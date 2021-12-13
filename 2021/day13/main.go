@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/brumhard/adventofcode/aocconv"
 )
@@ -26,7 +27,7 @@ func run() error {
 	}
 
 	fmt.Printf("Part 1: %v\n", SolvePart1(input))
-	fmt.Printf("Part 2: %v\n", SolvePart2(input))
+	fmt.Printf("Part 2: \n%v", SolvePart2(input))
 
 	return nil
 }
@@ -81,108 +82,87 @@ func inputFromString(inputStr string) (input, error) {
 	}, nil
 }
 
-func SolvePart1(input input) int {
-	newMap := make(map[point]struct{}, len(input.points))
+func calcNewPoints(input input) map[point]struct{} {
+	currentPoints := input.points
 
-	foldType, pos := input.folds[0].foldType, input.folds[0].position
-	for point := range input.points {
-		if foldType == "x" {
-			if point.x < pos {
-				newMap[point] = struct{}{}
-				continue
+	for _, fold := range input.folds {
+		newPoints := make(map[point]struct{}, len(currentPoints))
+
+		for point := range currentPoints {
+			if fold.foldType == "x" && point.x > fold.position {
+				dist := point.x - fold.position
+				point.x = fold.position - dist
 			}
-
-			if point.x == pos {
-				panic("what")
+			if fold.foldType == "y" && point.y > fold.position {
+				dist := point.y - fold.position
+				point.y = fold.position - dist
 			}
-
-			dist := point.x - pos
-			point.x = pos - dist
-
-			newMap[point] = struct{}{}
+			newPoints[point] = struct{}{}
 		}
-		if foldType == "y" {
-			if point.y < pos {
-				newMap[point] = struct{}{}
-				continue
-			}
 
-			if point.y == pos {
-				panic("what")
-			}
-
-			dist := point.y - pos
-			point.y = pos - dist
-
-			newMap[point] = struct{}{}
-		}
+		currentPoints = newPoints
 	}
 
-	return len(newMap)
+	return currentPoints
 }
 
-func SolvePart2(input input) int {
-	curMap := input.points
-	for _, fold := range input.folds {
-		newMap := make(map[point]struct{}, len(input.points))
+func SolvePart1(input input) int {
+	input.folds = input.folds[:1]
+	points := calcNewPoints(input)
+	return len(points)
+}
 
-		foldType, pos := fold.foldType, fold.position
-		for point := range curMap {
-			if foldType == "x" {
-				if point.x < pos {
-					newMap[point] = struct{}{}
-					continue
-				}
+func SolvePart2(input input) string {
+	points := calcNewPoints(input)
 
-				if point.x == pos {
-					panic("what")
-				}
-
-				dist := point.x - pos
-				point.x = pos - dist
-
-				newMap[point] = struct{}{}
-			}
-			if foldType == "y" {
-				if point.y < pos {
-					newMap[point] = struct{}{}
-					continue
-				}
-
-				if point.y == pos {
-					panic("what")
-				}
-
-				dist := point.y - pos
-				point.y = pos - dist
-
-				newMap[point] = struct{}{}
-			}
+	var maxX, maxY int
+	for p := range points {
+		if p.x > maxX {
+			maxX = p.x
 		}
-
-		curMap = newMap
+		if p.y > maxY {
+			maxY = p.y
+		}
 	}
 
-	visualize := make([][]string, 100)
+	matrix := NewMatrix(maxX+1, maxY+1).FillWith(" ")
+
+	for p := range points {
+		matrix[p.y][p.x] = "#"
+	}
+
+	return matrix.String()
+}
+
+type Matrix [][]string
+
+func NewMatrix(x, y int) Matrix {
+	visualize := make([][]string, y)
 	for i := range visualize {
-		visualize[i] = make([]string, 100)
+		visualize[i] = make([]string, x)
 	}
 
-	for y := range visualize {
-		for x := range visualize[y] {
-			if _, ok := curMap[point{x: x, y: y}]; ok {
-				visualize[y][x] = "#"
-				fmt.Print("#")
-				continue
-			}
+	return visualize
+}
 
-			visualize[y][x] = "-"
-			fmt.Print("-")
+func (m Matrix) FillWith(char string) Matrix {
+	for y := range m {
+		for x := range m[y] {
+			m[y][x] = char
 		}
-		fmt.Println()
 	}
 
-	fmt.Println(visualize)
+	return m
+}
 
-	return 0
+func (m Matrix) String() string {
+	builder := strings.Builder{}
+	for y := range m {
+		for x := range m[y] {
+			builder.WriteString(m[y][x])
+		}
+		builder.WriteString("\n")
+	}
+
+	return builder.String()
 }

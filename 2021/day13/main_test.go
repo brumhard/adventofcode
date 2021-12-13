@@ -43,10 +43,14 @@ fold along x=5`
 
 	t.Run("Test Part2", func(t *testing.T) {
 		got := SolvePart2(input)
-		expected := 0
-
+		expected := `#####
+#   #
+#   #
+#   #
+#####
+`
 		if got != expected {
-			t.Errorf("expected '%d' but got '%d'", expected, got)
+			t.Errorf("expected '%s' but got '%s'", expected, got)
 		}
 	})
 }
