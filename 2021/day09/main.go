@@ -7,6 +7,7 @@ import (
 	"sort"
 
 	"github.com/brumhard/adventofcode/aocconv"
+	"github.com/brumhard/adventofcode/coords"
 )
 
 //go:embed input.txt
@@ -77,28 +78,24 @@ func SolvePart1(input [][]int) int {
 	return riskLevel
 }
 
-type point struct {
-	i, y int
-}
-
 func SolvePart2(input [][]int) int {
-	var lowPoints []point
+	var lowPoints []coords.Point
 
-	for i := range input {
-		for y := range input[i] {
-			if i-1 >= 0 && input[i-1][y] <= input[i][y] {
+	for y := range input {
+		for x := range input[y] {
+			if y-1 >= 0 && input[y-1][x] <= input[y][x] {
 				continue
 			}
-			if i+1 <= len(input)-1 && input[i+1][y] <= input[i][y] {
+			if y+1 <= len(input)-1 && input[y+1][x] <= input[y][x] {
 				continue
 			}
-			if y-1 >= 0 && input[i][y-1] <= input[i][y] {
+			if x-1 >= 0 && input[y][x-1] <= input[y][x] {
 				continue
 			}
-			if y+1 <= len(input[i])-1 && input[i][y+1] <= input[i][y] {
+			if x+1 <= len(input[y])-1 && input[y][x+1] <= input[y][x] {
 				continue
 			}
-			lowPoints = append(lowPoints, point{i: i, y: y})
+			lowPoints = append(lowPoints, coords.Point{X: x, Y: y})
 		}
 	}
 
@@ -117,31 +114,31 @@ func SolvePart2(input [][]int) int {
 	return product
 }
 
-func sumSorroundingLowPoints(input [][]int, p point) map[point]struct{} {
-	i, y := p.i, p.y
+func sumSorroundingLowPoints(input [][]int, p coords.Point) map[coords.Point]struct{} {
+	y, x := p.Y, p.X
 
-	if input[i][y] == 9 {
+	if input[y][x] == 9 {
 		return nil
 	}
 
-	sum := map[point]struct{}{p: {}}
-	if i-1 >= 0 && input[i-1][y] > input[i][y] {
-		for k := range sumSorroundingLowPoints(input, point{i - 1, y}) {
+	sum := map[coords.Point]struct{}{p: {}}
+	if y-1 >= 0 && input[y-1][x] > input[y][x] {
+		for k := range sumSorroundingLowPoints(input, coords.Point{Y: y - 1, X: x}) {
 			sum[k] = struct{}{}
 		}
 	}
-	if i+1 <= len(input)-1 && input[i+1][y] > input[i][y] {
-		for k := range sumSorroundingLowPoints(input, point{i + 1, y}) {
+	if y+1 <= len(input)-1 && input[y+1][x] > input[y][x] {
+		for k := range sumSorroundingLowPoints(input, coords.Point{Y: y + 1, X: x}) {
 			sum[k] = struct{}{}
 		}
 	}
-	if y-1 >= 0 && input[i][y-1] > input[i][y] {
-		for k := range sumSorroundingLowPoints(input, point{i, y - 1}) {
+	if x-1 >= 0 && input[y][x-1] > input[y][x] {
+		for k := range sumSorroundingLowPoints(input, coords.Point{Y: y, X: x - 1}) {
 			sum[k] = struct{}{}
 		}
 	}
-	if y+1 <= len(input[i])-1 && input[i][y+1] > input[i][y] {
-		for k := range sumSorroundingLowPoints(input, point{i, y + 1}) {
+	if x+1 <= len(input[y])-1 && input[y][x+1] > input[y][x] {
+		for k := range sumSorroundingLowPoints(input, coords.Point{Y: y, X: x + 1}) {
 			sum[k] = struct{}{}
 		}
 	}

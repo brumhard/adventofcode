@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/brumhard/adventofcode/aocconv"
+	"github.com/brumhard/adventofcode/coords"
 )
 
 //go:embed input.txt
@@ -32,31 +32,27 @@ func run() error {
 	return nil
 }
 
-type point struct {
-	x, y int
-}
-
 type fold struct {
 	foldType string // x or y
 	position int
 }
 
 type input struct {
-	points map[point]struct{}
+	points map[coords.Point]struct{}
 	folds  []fold
 }
 
 func inputFromString(inputStr string) (input, error) {
 	split := aocconv.StrToStrSlice(inputStr, aocconv.WithDelimeter("\n\n"))
 
-	points := map[point]struct{}{}
+	points := map[coords.Point]struct{}{}
 	for _, line := range aocconv.StrToStrSlice(split[0]) {
 		x, y, err := aocconv.IntTuple(line, aocconv.WithDelimeter(","))
 		if err != nil {
 			return input{}, err
 		}
 
-		points[point{x, y}] = struct{}{}
+		points[coords.Point{x, y}] = struct{}{}
 	}
 
 	var folds []fold
@@ -82,20 +78,20 @@ func inputFromString(inputStr string) (input, error) {
 	}, nil
 }
 
-func calcNewPoints(input input) map[point]struct{} {
+func calcNewPoints(input input) map[coords.Point]struct{} {
 	currentPoints := input.points
 
 	for _, fold := range input.folds {
-		newPoints := make(map[point]struct{}, len(currentPoints))
+		newPoints := make(map[coords.Point]struct{}, len(currentPoints))
 
 		for point := range currentPoints {
-			if fold.foldType == "x" && point.x > fold.position {
-				dist := point.x - fold.position
-				point.x = fold.position - dist
+			if fold.foldType == "x" && point.X > fold.position {
+				dist := point.X - fold.position
+				point.X = fold.position - dist
 			}
-			if fold.foldType == "y" && point.y > fold.position {
-				dist := point.y - fold.position
-				point.y = fold.position - dist
+			if fold.foldType == "y" && point.Y > fold.position {
+				dist := point.Y - fold.position
+				point.Y = fold.position - dist
 			}
 			newPoints[point] = struct{}{}
 		}
@@ -115,54 +111,5 @@ func SolvePart1(input input) int {
 func SolvePart2(input input) string {
 	points := calcNewPoints(input)
 
-	var maxX, maxY int
-	for p := range points {
-		if p.x > maxX {
-			maxX = p.x
-		}
-		if p.y > maxY {
-			maxY = p.y
-		}
-	}
-
-	matrix := NewMatrix(maxX+1, maxY+1).FillWith(" ")
-
-	for p := range points {
-		matrix[p.y][p.x] = "#"
-	}
-
-	return matrix.String()
-}
-
-type Matrix [][]string
-
-func NewMatrix(x, y int) Matrix {
-	visualize := make([][]string, y)
-	for i := range visualize {
-		visualize[i] = make([]string, x)
-	}
-
-	return visualize
-}
-
-func (m Matrix) FillWith(char string) Matrix {
-	for y := range m {
-		for x := range m[y] {
-			m[y][x] = char
-		}
-	}
-
-	return m
-}
-
-func (m Matrix) String() string {
-	builder := strings.Builder{}
-	for y := range m {
-		for x := range m[y] {
-			builder.WriteString(m[y][x])
-		}
-		builder.WriteString("\n")
-	}
-
-	return builder.String()
+	return coords.VisualizePointSet(points)
 }

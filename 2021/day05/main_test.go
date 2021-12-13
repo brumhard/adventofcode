@@ -2,6 +2,8 @@ package main
 
 import (
 	"testing"
+
+	"github.com/brumhard/adventofcode/coords"
 )
 
 func TestSolution(t *testing.T) {
@@ -41,7 +43,7 @@ func TestSolution(t *testing.T) {
 
 	t.Run("CoveredCoordinates", func(t *testing.T) {
 		t.Run("horizontal", func(t *testing.T) {
-			line := Line{start: Coordinate{x: 1, y: 2}, end: Coordinate{x: 3, y: 2}}
+			line := Line{start: coords.Point{X: 1, Y: 2}, end: coords.Point{X: 3, Y: 2}}
 			coords := line.CoveredCoordinates(false)
 
 			if len(coords) != 3 {
@@ -50,7 +52,7 @@ func TestSolution(t *testing.T) {
 		})
 
 		t.Run("vertical", func(t *testing.T) {
-			line := Line{start: Coordinate{x: 1, y: 4}, end: Coordinate{x: 1, y: 2}}
+			line := Line{start: coords.Point{X: 1, Y: 4}, end: coords.Point{X: 1, Y: 2}}
 			coords := line.CoveredCoordinates(false)
 
 			if len(coords) != 3 {
@@ -59,7 +61,7 @@ func TestSolution(t *testing.T) {
 		})
 
 		t.Run("diagonal", func(t *testing.T) {
-			line := Line{start: Coordinate{x: 1, y: 1}, end: Coordinate{x: 3, y: 3}}
+			line := Line{start: coords.Point{X: 1, Y: 1}, end: coords.Point{X: 3, Y: 3}}
 			coords := line.CoveredCoordinates(true)
 
 			if len(coords) != 3 {
@@ -68,7 +70,7 @@ func TestSolution(t *testing.T) {
 		})
 
 		t.Run("diagonal 2", func(t *testing.T) {
-			line := Line{start: Coordinate{x: 9, y: 7}, end: Coordinate{x: 7, y: 9}}
+			line := Line{start: coords.Point{X: 9, Y: 7}, end: coords.Point{X: 7, Y: 9}}
 			coords := line.CoveredCoordinates(true)
 
 			if len(coords) != 3 {

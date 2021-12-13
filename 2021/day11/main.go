@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/brumhard/adventofcode/aocconv"
+	"github.com/brumhard/adventofcode/coords"
 )
 
 //go:embed input.txt
@@ -52,17 +53,13 @@ func inputFromString(inputStr string) ([][]int, error) {
 	return input, nil
 }
 
-type point struct {
-	i, y int
-}
-
 func SolvePart1(input [][]int) int {
 	flashes := 0
 	for s := 0; s < 100; s++ {
-		flashed := map[point]struct{}{}
-		for i := range input {
-			for y := range input[i] {
-				flashes += bumpEnergyLevel(input, point{i, y}, flashed)
+		flashed := map[coords.Point]struct{}{}
+		for y := range input {
+			for x := range input[y] {
+				flashes += bumpEnergyLevel(input, coords.Point{Y: y, X: x}, flashed)
 			}
 		}
 	}
@@ -70,35 +67,35 @@ func SolvePart1(input [][]int) int {
 	return flashes
 }
 
-func bumpEnergyLevel(input [][]int, pos point, flashed map[point]struct{}) int {
-	i, y := pos.i, pos.y
+func bumpEnergyLevel(input [][]int, pos coords.Point, flashed map[coords.Point]struct{}) int {
+	y, x := pos.Y, pos.X
 
 	if _, ok := flashed[pos]; ok {
 		return 0
 	}
-	if i < 0 || i > len(input)-1 || y < 0 || y > len(input[i])-1 {
+	if y < 0 || y > len(input)-1 || x < 0 || x > len(input[y])-1 {
 		return 0
 	}
 
-	input[i][y]++
+	input[y][x]++
 
-	if input[i][y] <= 9 {
+	if input[y][x] <= 9 {
 		return 0
 	}
 
 	// set to zero
-	input[i][y] = 0
-	flashed[point{i, y}] = struct{}{}
+	input[y][x] = 0
+	flashed[coords.Point{Y: y, X: x}] = struct{}{}
 
-	sorrounding := map[point]struct{}{
-		{i - 1, y - 1}: {},
-		{i - 1, y}:     {},
-		{i - 1, y + 1}: {},
-		{i, y - 1}:     {},
-		{i, y + 1}:     {},
-		{i + 1, y - 1}: {},
-		{i + 1, y}:     {},
-		{i + 1, y + 1}: {},
+	sorrounding := map[coords.Point]struct{}{
+		{Y: y - 1, X: x - 1}: {},
+		{Y: y - 1, X: x}:     {},
+		{Y: y - 1, X: x + 1}: {},
+		{Y: y, X: x - 1}:     {},
+		{Y: y, X: x + 1}:     {},
+		{Y: y + 1, X: x - 1}: {},
+		{Y: y + 1, X: x}:     {},
+		{Y: y + 1, X: x + 1}: {},
 	}
 
 	flashes := 1
@@ -113,10 +110,10 @@ func SolvePart2(input [][]int) int {
 	step := 1
 	for {
 		flashes := 0
-		flashed := map[point]struct{}{}
-		for i := range input {
-			for y := range input[i] {
-				flashes += bumpEnergyLevel(input, point{i, y}, flashed)
+		flashed := map[coords.Point]struct{}{}
+		for y := range input {
+			for x := range input[y] {
+				flashes += bumpEnergyLevel(input, coords.Point{Y: y, X: x}, flashed)
 			}
 		}
 		if flashes == len(input)*len(input[0]) {

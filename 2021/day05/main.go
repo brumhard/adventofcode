@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/brumhard/adventofcode/aocconv"
+	"github.com/brumhard/adventofcode/coords"
 )
 
 //go:embed input.txt
@@ -33,28 +34,23 @@ func run() error {
 	return nil
 }
 
-type Coordinate struct {
-	x int
-	y int
-}
-
 type Line struct {
-	start Coordinate
-	end   Coordinate
+	start coords.Point
+	end   coords.Point
 }
 
-func (l Line) CoveredCoordinates(enableDiagonalCheck bool) []Coordinate {
-	var coordinates []Coordinate
+func (l Line) CoveredCoordinates(enableDiagonalCheck bool) []coords.Point {
+	var coordinates []coords.Point
 
-	isHorizontal := l.start.x == l.end.x
-	isVertical := l.start.y == l.end.y
-	is45Diagonal := math.Abs(float64(l.start.x)-float64(l.end.x)) == math.Abs(float64(l.start.y)-float64(l.end.y))
+	isHorizontal := l.start.X == l.end.X
+	isVertical := l.start.Y == l.end.Y
+	is45Diagonal := math.Abs(float64(l.start.X)-float64(l.end.X)) == math.Abs(float64(l.start.Y)-float64(l.end.Y))
 	if isHorizontal || isVertical || (is45Diagonal && enableDiagonalCheck) {
-		x, y := l.start.x, l.start.y
+		x, y := l.start.X, l.start.Y
 		for {
-			coordinates = append(coordinates, Coordinate{x: x, y: y})
+			coordinates = append(coordinates, coords.Point{X: x, Y: y})
 
-			if x == l.end.x && y == l.end.y {
+			if x == l.end.X && y == l.end.Y {
 				break
 			}
 
@@ -62,8 +58,8 @@ func (l Line) CoveredCoordinates(enableDiagonalCheck bool) []Coordinate {
 			// if it's the same do nothing
 			// if end is smaller than current decrease
 			// -> go towards end
-			x += sign(l.end.x - x)
-			y += sign(l.end.y - y)
+			x += sign(l.end.X - x)
+			y += sign(l.end.Y - y)
 		}
 	}
 
@@ -101,7 +97,7 @@ func inputFromString(inputStr string) ([]Line, error) {
 			return nil, err
 		}
 
-		lines = append(lines, Line{start: Coordinate{x: startx, y: starty}, end: Coordinate{x: endx, y: endy}})
+		lines = append(lines, Line{start: coords.Point{X: startx, Y: starty}, end: coords.Point{X: endx, Y: endy}})
 	}
 
 	return lines, nil
@@ -109,7 +105,7 @@ func inputFromString(inputStr string) ([]Line, error) {
 
 func coveredCount(lines []Line, withDiagonals bool) int {
 	countCoveredByAtLeastTwo := 0
-	coveredCountMap := map[Coordinate]int{}
+	coveredCountMap := map[coords.Point]int{}
 
 	for _, line := range lines {
 		for _, coord := range line.CoveredCoordinates(withDiagonals) {
