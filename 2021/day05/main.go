@@ -91,17 +91,17 @@ func inputFromString(inputStr string) ([]Line, error) {
 			return nil, errors.New("unexpected input")
 		}
 
-		startxy, err := aocconv.StrToIntSlice(startEnd[0], aocconv.WithDelimeter(","))
+		startx, starty, err := aocconv.IntTuple(startEnd[0], aocconv.WithDelimeter(","))
 		if err != nil {
 			return nil, err
 		}
 
-		endxy, err := aocconv.StrToIntSlice(startEnd[1], aocconv.WithDelimeter(","))
+		endx, endy, err := aocconv.IntTuple(startEnd[1], aocconv.WithDelimeter(","))
 		if err != nil {
 			return nil, err
 		}
 
-		lines = append(lines, Line{start: Coordinate{x: startxy[0], y: startxy[1]}, end: Coordinate{x: endxy[0], y: endxy[1]}})
+		lines = append(lines, Line{start: Coordinate{x: startx, y: starty}, end: Coordinate{x: endx, y: endy}})
 	}
 
 	return lines, nil

@@ -51,12 +51,12 @@ func inputFromString(inputStr string) (input, error) {
 
 	points := map[point]struct{}{}
 	for _, line := range aocconv.StrToStrSlice(split[0]) {
-		xy, err := aocconv.StrToIntSlice(line, aocconv.WithDelimeter(","))
+		x, y, err := aocconv.IntTuple(line, aocconv.WithDelimeter(","))
 		if err != nil {
 			return input{}, err
 		}
 
-		points[point{xy[0], xy[1]}] = struct{}{}
+		points[point{x, y}] = struct{}{}
 	}
 
 	var folds []fold

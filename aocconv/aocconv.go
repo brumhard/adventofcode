@@ -40,6 +40,15 @@ func StrToIntSlice(inputStr string, opts ...Option) ([]int, error) {
 	return ints, nil
 }
 
+func IntTuple(inputStr string, opts ...Option) (int, int, error) {
+	ints, err := StrToIntSlice(inputStr, opts...)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return ints[0], ints[1], nil
+}
+
 func StrToStrSlice(inputStr string, opts ...Option) []string {
 	options := ParseOpts{}
 
