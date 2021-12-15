@@ -21,22 +21,8 @@ func TestSolution(t *testing.T) {
 		t.Errorf("failed to load inputs %v", err)
 	}
 
-	// t.Run("Test Part1", func(t *testing.T) {
-	// 	got := SolvePart1(input)
-	// 	expected := 40
-
-	// 	if got != expected {
-	// 		t.Errorf("expected '%d' but got '%d'", expected, got)
-	// 	}
-	// })
-
-	graph, err := nodesFromMatrix(input)
-	if err != nil {
-		t.Errorf("failed to load inputs %v", err)
-	}
-
 	t.Run("Test Part12", func(t *testing.T) {
-		got := SolvePart12(graph)
+		got := SolvePart12(nodesFromMatrix(input))
 		expected := 40
 
 		if got != expected {
@@ -44,14 +30,8 @@ func TestSolution(t *testing.T) {
 		}
 	})
 
-	newMatrix := input2FromMatrix(input)
-	graph2, err := nodesFromMatrix(newMatrix)
-	if err != nil {
-		t.Errorf("failed to load inputs %v", err)
-	}
-
 	t.Run("Test Part2", func(t *testing.T) {
-		got := SolvePart12(graph2)
+		got := SolvePart12(nodesFromMatrix(input2FromMatrix(input)))
 		expected := 315
 
 		if got != expected {

@@ -26,27 +26,10 @@ func run() error {
 		return err
 	}
 
-	// graph, err := nodesFromMatrix(input)
-	// if err != nil {
-	// 	return err
-	// }
-
-	input2 := input2FromMatrix(input)
-	graph2, err := nodesFromMatrix(input2)
-	if err != nil {
-		return err
-	}
-
-	// fmt.Printf("Part 1: %v\n", SolvePart12(graph))
-	fmt.Printf("Part 2: %v\n", SolvePart12(graph2))
+	fmt.Printf("Part 1: %v\n", SolvePart12(nodesFromMatrix(input)))
+	fmt.Printf("Part 2: %v\n", SolvePart12(nodesFromMatrix(input2FromMatrix(input))))
 
 	return nil
-}
-
-type Node struct {
-	neighbors map[coords.Point]int
-	minDist   int
-	visited   bool
 }
 
 func inputFromString(inputStr string) ([][]int, error) {
@@ -66,9 +49,15 @@ func inputFromString(inputStr string) ([][]int, error) {
 	return input, nil
 }
 
+type Node struct {
+	neighbors map[coords.Point]int
+	minDist   int
+	visited   bool
+}
+
 var MAXY, MAXX int
 
-func nodesFromMatrix(matrix [][]int) (map[coords.Point]Node, error) {
+func nodesFromMatrix(matrix [][]int) map[coords.Point]Node {
 	MAXY = len(matrix) - 1
 	MAXX = len(matrix[0]) - 1
 
@@ -100,7 +89,30 @@ func nodesFromMatrix(matrix [][]int) (map[coords.Point]Node, error) {
 		}
 	}
 
-	return input, nil
+	return input
+}
+
+func input2FromMatrix(matrix [][]int) [][]int {
+	oldY := len(matrix)
+	oldX := len(matrix[0])
+
+	newMatrix := make([][]int, 5*oldY)
+	for i := range newMatrix {
+		newMatrix[i] = make([]int, 5*oldX)
+	}
+
+	for i := 0; i < 5; i++ {
+		for f := 0; f < 5; f++ {
+			toInsert := bumpMatrixTimes(matrix, i+f)
+			for y := range toInsert {
+				for x := range toInsert[y] {
+					newMatrix[y+i*oldY][x+f*oldX] = toInsert[y][x]
+				}
+			}
+		}
+	}
+
+	return newMatrix
 }
 
 func SolvePart12(input map[coords.Point]Node) int {
@@ -153,29 +165,6 @@ func SolvePart12(input map[coords.Point]Node) int {
 	return input[coords.Point{X: MAXX, Y: MAXY}].minDist
 }
 
-func input2FromMatrix(matrix [][]int) [][]int {
-	oldY := len(matrix)
-	oldX := len(matrix[0])
-
-	newMatrix := make([][]int, 5*oldY)
-	for i := range newMatrix {
-		newMatrix[i] = make([]int, 5*oldX)
-	}
-
-	for i := 0; i < 5; i++ {
-		for f := 0; f < 5; f++ {
-			toInsert := bumpMatrixTimes(matrix, i+f)
-			for y := range toInsert {
-				for x := range toInsert[y] {
-					newMatrix[y+i*oldY][x+f*oldX] = toInsert[y][x]
-				}
-			}
-		}
-	}
-
-	return newMatrix
-}
-
 func checkSolved(input map[coords.Point]Node) bool {
 	for _, n := range input {
 		if !n.visited {
@@ -209,10 +198,4 @@ func bumpMatrix(matrix [][]int) [][]int {
 	}
 
 	return newMatrix
-}
-
-func SolvePart2(input [][]int) int {
-	var solution int
-
-	return solution
 }

@@ -44,9 +44,9 @@ fold along x=5`
 	t.Run("Test Part2", func(t *testing.T) {
 		got := SolvePart2(input)
 		expected := `#####
-#   #
-#   #
-#   #
+#...#
+#...#
+#...#
 #####
 `
 		if got != expected {
