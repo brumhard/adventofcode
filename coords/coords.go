@@ -19,7 +19,7 @@ func VisualizePoints(points []Point) string {
 		}
 	}
 
-	matrix := NewMatrix(maxX+1, maxY+1).FillWith(" ")
+	matrix := NewMatrix(maxX+1, maxY+1).FillWith(".")
 
 	for _, p := range points {
 		matrix[p.Y][p.X] = "#"
