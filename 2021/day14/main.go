@@ -93,19 +93,21 @@ func SolvePart1(input input) int {
 	return max - min
 }
 
-var cache = map[string]map[int]ResultMap{}
-
 func SolvePart2(input input) int {
-	const steps = 10
+	const steps = 40
 
 	templateRunes := []rune(input.template)
 	countMap := map[rune]int{}
 	for y := range templateRunes {
+		count := countMap[rune(templateRunes[y])]
+		countMap[rune(templateRunes[y])] = count + 1
+
 		if y+1 == len(templateRunes) {
 			break
 		}
 
-		solve2(string(templateRunes[y:y+2]), input.insertionMap, steps, y == 0, countMap)
+		toInsert := solvePair(string(templateRunes[y])+string(templateRunes[y+1]), input.insertionMap, steps)
+		mergeIntoMap(countMap, toInsert)
 	}
 
 	min, max := math.MaxInt, 0
@@ -124,45 +126,43 @@ func SolvePart2(input input) int {
 
 type ResultMap map[rune]int
 
-func solve2(double string, insertionMap map[string]string, iterations int, first bool, resultMap map[rune]int) {
-	if cached, ok := cache[double][iterations]; ok {
-		mergeIntoMap(resultMap, cached)
-		return
+var cache = map[string]map[int]ResultMap{}
+
+// solvePair calculates what runes need to be inserted in between the given pair after n iterations.
+func solvePair(pair string, insertionMap map[string]string, iterations int) (res map[rune]int) {
+	// caching
+	if cached, ok := cache[pair][iterations]; ok {
+		return cached
 	}
 
-	doubleRunes := []rune(double)
-	currentTemplate := string(doubleRunes[0]) + insertionMap[double] + string(doubleRunes[1])
-	newResultMap := map[rune]int{}
-
-	if iterations == 1 {
-		for i, r := range currentTemplate {
-			if i == 0 && !first {
-				continue
-			}
-			count := newResultMap[r]
-			newResultMap[r] = count + 1
+	defer func() {
+		if _, ok := cache[pair]; ok {
+			cache[pair][iterations] = res
+		} else {
+			cache[pair] = map[int]ResultMap{iterations: res}
 		}
+	}()
+
+	// logic
+	resultMap := map[rune]int{
+		rune(insertionMap[pair][0]): 1,
 	}
 
-	for i := 1; i < iterations; i++ {
-		templateRunes := []rune(currentTemplate)
-		for y := range templateRunes {
-			if y+1 == len(templateRunes) {
-				break
-			}
+	if iterations <= 1 {
+		return resultMap
+	}
 
-			curDouble := string(templateRunes[y : y+2])
-			solve2(curDouble, insertionMap, iterations-i, y == 0, newResultMap)
+	withInsertion := string(pair[0]) + insertionMap[pair] + string(pair[1])
+	for y := range withInsertion {
+		if y+1 >= len(withInsertion) {
+			break
 		}
+
+		toInsert := solvePair(string(withInsertion[y])+string(withInsertion[y+1]), insertionMap, iterations-1)
+		mergeIntoMap(resultMap, toInsert)
 	}
 
-	if _, ok := cache[double]; ok {
-		cache[double][iterations] = newResultMap
-	} else {
-		cache[double] = map[int]ResultMap{iterations: newResultMap}
-	}
-
-	mergeIntoMap(resultMap, newResultMap)
+	return resultMap
 }
 
 func mergeIntoMap(resultMap map[rune]int, toMerge map[rune]int) {
